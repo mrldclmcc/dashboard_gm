@@ -865,48 +865,53 @@
       return meetings;
     }
 
-    function standardizeMeetingData(rawData) {
-      const id = rawData["BID Source ID"] ||
-                 `new-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+function standardizeMeetingData(rawData) {
+    // Always use a string as the canonical id
+    const id = String(
+        rawData["BID Source ID"] ||
+        `new-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+    );
 
-      let meetingDate = rawData["Bid Open Date"] || "";
-      let meetingTime = (rawData["Bid Open Time"] || "")
-                        .replace("1899-12-30T", "")
-                        .slice(0, 5);
+    // Parse date & time
+    let meetingDate = rawData["Bid Open Date"] || "";
+    let meetingTime = (rawData["Bid Open Time"] || "")
+                      .replace("1899-12-30T", "")
+                      .slice(0, 5);
 
-      let fullDateTime = null;
+    let fullDateTime = null;
 
-      if (meetingDate) {
+    if (meetingDate) {
         const [m, d, y] = meetingDate.split("/");
         if (m && d && y) {
-          meetingDate = `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
-          const timePart = meetingTime || "00:00";
-          fullDateTime = new Date(`${meetingDate}T${timePart}:00`);
-          if (isNaN(fullDateTime.getTime())) fullDateTime = null;
+            meetingDate = `${y}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
+            const timePart = meetingTime || "00:00";
+            fullDateTime = new Date(`${meetingDate}T${timePart}:00`);
+            if (isNaN(fullDateTime.getTime())) fullDateTime = null;
         }
-      }
-
-      return {
-        id: id,
-        projectName: rawData["Project Name"] || '',
-        meetingDate: meetingDate,
-        meetingTime: meetingTime,
-        fullDateTime: fullDateTime,
-        meetingStreet: rawData["Bid Open Street"] || '',
-        meetingCity: rawData["Bid Open City"] || '',
-        meetingState: rawData["Bid Open State"] || '',
-        meetingZip: rawData["Bid Open Zip"] || '',
-        projectDescription: rawData["Projec Description"] || '',
-        bidProjectInfo: rawData["Bid Project Info"] || '',
-        lowBidContractor1: rawData["Low Bid Contractor"] || '',
-        lowBidAmount1: rawData["Low Bid Amount"] || '',
-        lowBidContractor2: rawData["Low Bid Contractor 2"] || '',
-        lowBidAmount2: rawData["Low Bid Amount 2"] || '',
-        lowBidContractor3: rawData["Low Bid Contractor 3"] || '',
-        lowBidAmount3: rawData["Low Bid Amount 3"] || '',
-        bidSourceId: rawData["BID Source ID"] || id
-      };
     }
+
+    // Return a consistent object
+    return {
+        id,
+        projectName:            rawData["Project Name"] || "",
+        meetingDate,
+        meetingTime,
+        fullDateTime,
+        meetingStreet:          rawData["Bid Open Street"] || "",
+        meetingCity:            rawData["Bid Open City"] || "",
+        meetingState:           rawData["Bid Open State"] || "",
+        meetingZip:             rawData["Bid Open Zip"] || "",
+        projectDescription:     rawData["Projec Description"] || "",
+        bidProjectInfo:         rawData["Bid Project Info"] || "",
+        lowBidContractor1:      rawData["Low Bid Contractor"] || "",
+        lowBidAmount1:          rawData["Low Bid Amount"] || "",
+        lowBidContractor2:      rawData["Low Bid Contractor 2"] || "",
+        lowBidAmount2:          rawData["Low Bid Amount 2"] || "",
+        lowBidContractor3:      rawData["Low Bid Contractor 3"] || "",
+        lowBidAmount3:          rawData["Low Bid Amount 3"] || "",
+        bidSourceId:            id   // same value under legacy name
+    };
+}
 
     function convertToSheetFormat(meeting) {
       return {
