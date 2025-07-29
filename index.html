@@ -898,14 +898,19 @@
 
             // Parse date and time for consistent storage
             let meetingDate = rawData["Bid Open Date"] || '';
-            let meetingTime = rawData["Bid Open Time"] || '';
+            let meetingTime = (rawData["Bid Open Time"] || '')
+                              .replace('1899-12-30T', '')
+                              .slice(0, 5);                       // keep only "HH:mm"
 
-            // Handle various date formats if needed, for simplicity we assume YYYY-MM-DD for date input type
-            // If the date is like "8/11/2025", convert to YYYY-MM-DD
-            if (meetingDate && meetingDate.includes('/')) {
-                const parts = meetingDate.split('/');
-                if (parts.length === 3) {
-                    meetingDate = `${parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
+            let fullDateTime = null;
+            if (meetingDate) {
+                const [m, d, y] = meetingDate.split('/');
+                if (m && d && y) {
+                    const iso = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}T${meetingTime || '00:00'}:00`;
+                    fullDateTime = new Date(iso);
+
+                    // also re-write meetingDate in YYYY-MM-DD for the form inputs
+                    meetingDate = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
                 }
             }
 
