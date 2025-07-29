@@ -678,7 +678,7 @@
 
     <script>
         // --- Global Variables and Constants ---
-        const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyj0NvobX8ZftvwhsJudwIyEM9n5DF1nZPhL4-aqGpMKPj0naJJcpW-ow-O_TS5us5gcA/exec';
+        const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzZEJ7KzGsDrSXPBdA-kBs7tm0y-_wtF5NWfEy9pVsfH1CAgmCL6Wc4P1uOq-OWrpWUQw/exec';
         let meetingsData = []; // Stores all fetched meeting data
         let currentViewDate = new Date(); // Current date being displayed
         let isWeekView = false; // State for week view toggle
@@ -1583,6 +1583,16 @@
         }
 
         function doPost(e) {
+            // This is a pre-flight request for CORS, it must return 200 OK with appropriate headers
+            if (e.parameter.action === 'options') {
+                return ContentService.createTextOutput('')
+                    .setHeaders({
+                        'Access-Control-Allow-Origin': '*',
+                        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                        'Access-Control-Allow-Headers': 'Content-Type'
+                    });
+            }
+
             const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
             const payload = JSON.parse(e.postData.contents);
             const action = payload.action;
