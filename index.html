@@ -686,7 +686,1468 @@
 
   <script>
     // --- Global Variables and Constants ---
-    const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyX-bAjfSW4s8Z72Opq-mFm9kCPxPVdLIXqau7po6WrVolhLBSlCd9JgsOUz-6b8gJ_qA/exec';
+    const APP_SCRIPT_URL = '<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LMCC Dashboard App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #FBF5DE;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.4;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+            padding-bottom: 100px;
+        }
+
+        .header {
+            background: #3D74B6;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .date-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            background: white;
+            margin: 20px 0;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .date-nav button {
+            background: #3D74B6;
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            min-width: 60px;
+        }
+
+        .date-nav button:hover {
+            background: #2a5a94;
+        }
+
+        .current-date {
+            font-size: 20px;
+            font-weight: bold;
+            color: #3D74B6;
+            text-align: center;
+            flex: 1;
+        }
+
+        .meeting-card {
+            background: white;
+            border-radius: 16px;
+            margin: 20px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+            border-left: 6px solid #3D74B6;
+        }
+
+        .meeting-header {
+            background: #EAC8A6;
+            padding: 20px;
+            color: #333;
+        }
+
+        .meeting-title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .meeting-time {
+            font-size: 18px;
+            color: #666;
+        }
+
+        .meeting-body {
+            padding: 20px;
+        }
+
+        .action-button {
+            display: block;
+            width: 100%;
+            padding: 18px;
+            margin: 12px 0;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .maps-button {
+            background: #3D74B6;
+            color: white;
+        }
+
+        .maps-button:hover {
+            background: #2a5a94;
+            transform: translateY(-2px);
+        }
+
+        .url-button {
+            background: #EAC8A6;
+            color: #333;
+        }
+
+        .url-button:hover {
+            background: #d4b895;
+            transform: translateY(-2px);
+        }
+
+        .details-button {
+            background: #DC3C22;
+            color: white;
+        }
+
+        .details-button:hover {
+            background: #b8321d;
+            transform: translateY(-2px);
+        }
+
+        .fab {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 1000;
+            transition: all 0.2s;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+        }
+
+        .add-fab {
+            bottom: 20px;
+            right: 20px;
+            background: #DC3C22;
+            color: white;
+        }
+
+        .search-fab {
+            bottom: 20px;
+            left: 20px;
+            background: #3D74B6;
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 20px;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 600px;
+            margin: 50px auto;
+        }
+
+        .modal-header {
+            font-size: 24px;
+            font-weight: bold;
+            color: #3D74B6;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .close-modal {
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            color: #666;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            margin: -10px -10px 0 0;
+        }
+
+        .form-group {
+            margin: 20px 0;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #3D74B6;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #EAC8A6;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3D74B6;
+        }
+
+        .submit-button {
+            background: #3D74B6;
+            color: white;
+            padding: 18px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .submit-button:hover {
+            background: #2a5a94;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 18px;
+        }
+
+        .no-meetings {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 18px;
+            background: white;
+            border-radius: 16px;
+            margin: 20px 0;
+        }
+
+        .search-container {
+            position: sticky;
+            top: 80px;
+            background: #FBF5DE;
+            padding: 10px 0;
+            z-index: 99;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #3D74B6;
+            border-radius: 12px;
+            font-size: 18px;
+            background: white;
+        }
+
+        .week-view {
+            display: none;
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .week-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .week-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+
+        .week-day {
+            padding: 15px 5px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .week-day:hover {
+            background: #EAC8A6;
+        }
+
+        .week-day.has-meeting {
+            background: #3D74B6;
+            color: white;
+        }
+
+        .week-day.selected {
+            background: #DC3C22;
+            color: white;
+        }
+
+        .file-upload {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px dashed #3D74B6;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .file-upload:hover {
+            border-color: #DC3C22;
+            background: rgba(220, 60, 34, 0.1);
+        }
+
+        .file-upload input {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+                padding-bottom: 100px;
+            }
+            
+            .meeting-card {
+                margin: 15px 0;
+            }
+            
+            .action-button {
+                padding: 20px;
+                font-size: 20px;
+            }
+            
+            .fab {
+                width: 70px;
+                height: 70px;
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        LMCC Dashboard App
+    </div>
+
+    <div class="container">
+        <div class="date-nav">
+            <button onclick="changeDate(-1)">‹ Prev</button>
+            <div class="current-date" id="currentDate">Today</div>
+            <button onclick="changeDate(1)">Next ›</button>
+        </div>
+
+        <div class="search-container" id="searchContainer" style="display: none;">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search meetings..." 
+                   oninput="searchMeetings(this.value)">
+        </div>
+
+        <div class="week-view" id="weekView">
+            <div class="week-nav">
+                <button onclick="changeWeek(-1)">‹ Prev Week</button>
+                <div id="weekTitle">Week View</div>
+                <button onclick="changeWeek(1)">Next Week ›</button>
+            </div>
+            <div class="week-days" id="weekDays"></div>
+        </div>
+
+        <div id="meetingsContainer">
+            <div class="loading">Loading meetings...</div>
+        </div>
+    </div>
+
+    <!-- FABs -->
+    <button class="fab add-fab" onclick="showAddMeetingModal()">+</button>
+    <button class="fab search-fab" onclick="toggleSearch()">🔍</button>
+
+    <!-- Add Meeting Modal -->
+    <div class="modal" id="addMeetingModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('addMeetingModal')">&times;</button>
+            <div class="modal-header">Add New Meeting</div>
+            
+            <div class="form-group">
+                <label>Add Method:</label>
+                <select id="addMethod" onchange="toggleAddMethod()">
+                    <option value="manual">Manual Entry</option>
+                    <option value="ics">Upload ICS File</option>
+                    <option value="csv">Upload CSV/Excel</option>
+                </select>
+            </div>
+
+            <div id="manualForm">
+                <div class="form-group">
+                    <label>Project Name:</label>
+                    <input type="text" id="projectName" required>
+                </div>
+                <div class="form-group">
+                    <label>Meeting Date:</label>
+                    <input type="date" id="meetingDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Meeting Time:</label>
+                    <input type="time" id="meetingTime" required>
+                </div>
+                <div class="form-group">
+                    <label>Street Address:</label>
+                    <input type="text" id="streetAddress">
+                </div>
+                <div class="form-group">
+                    <label>City:</label>
+                    <input type="text" id="city">
+                </div>
+                <div class="form-group">
+                    <label>State:</label>
+                    <input type="text" id="state">
+                </div>
+                <div class="form-group">
+                    <label>Zip Code:</label>
+                    <input type="text" id="zipCode">
+                </div>
+                <div class="form-group">
+                    <label>BID Source ID:</label>
+                    <input type="text" id="bidSourceId">
+                </div>
+                <div class="form-group">
+                    <label>Project Description:</label>
+                    <textarea id="projectDescription" rows="3"></textarea>
+                </div>
+                <button class="submit-button" onclick="addMeeting()">Add Meeting</button>
+            </div>
+
+            <div id="fileUploadForm" style="display: none;">
+                <div class="file-upload" onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" accept=".ics,.csv,.xlsx,.xls" onchange="handleFileUpload(this)">
+                    <div>Click to upload file</div>
+                    <div style="font-size: 14px; color: #666; margin-top: 10px;">
+                        Supports ICS, CSV, and Excel files
+                    </div>
+                </div>
+                <button class="submit-button" onclick="processUpload()" id="processUploadBtn" style="display: none;">
+                    Process Upload
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Meeting Details Modal -->
+    <div class="modal" id="meetingDetailsModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('meetingDetailsModal')">&times;</button>
+            <div class="modal-header">Meeting Details</div>
+            <div id="meetingDetailsContent"></div>
+        </div>
+    </div>
+
+    <!-- Edit Meeting Modal -->
+    <div class="modal" id="editMeetingModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('editMeetingModal')">&times;</button>
+            <div class="modal-header">Edit Meeting</div>
+            <div id="editMeetingForm"></div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let allMeetings = [];
+        let filteredMeetings = [];
+        let currentDate = new Date();
+        let currentWeekStart = new Date();
+        let isSearchMode = false;
+        let uploadedFileData = null;
+
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxyBNdrvjj16Crslz7B5A9qQjV1B7vXxxsBBDk_uSY4PBSFUxhWQAJP_LecVNy9kBUQ5w/exec';
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMeetings();
+            updateDateDisplay();
+            setupWeekView();
+        });
+
+        // Load meetings from Google Sheets
+        async function loadMeetings() {
+            try {
+                const response = await fetch(`${API_URL}?action=getMeetings`);
+                const data = await response.json();
+                console.log('Raw API response:', data); // Debug log
+                allMeetings = data.filter(meeting => meeting['Bid Open Date'] && meeting['Bid Open Time']);
+                filteredMeetings = [...allMeetings];
+                displayMeetings();
+            } catch (error) {
+                console.error('Error loading meetings:', error);
+                document.getElementById('meetingsContainer').innerHTML = 
+                    '<div class="no-meetings">Error loading meetings. Please try again.</div>';
+            }
+        }
+
+        // Display meetings for current date
+        function displayMeetings() {
+            const container = document.getElementById('meetingsContainer');
+            const currentDateStr = formatDateForComparison(currentDate);
+            
+            let meetingsToShow = isSearchMode ? filteredMeetings : 
+                filteredMeetings.filter(meeting => {
+                    const meetingDate = new Date(meeting['Bid Open Date']);
+                    return formatDateForComparison(meetingDate) === currentDateStr;
+                });
+
+            if (meetingsToShow.length === 0) {
+                container.innerHTML = `<div class="no-meetings">
+                    ${isSearchMode ? 'No meetings found' : 'No meetings scheduled for this date'}
+                </div>`;
+                return;
+            }
+
+            // Sort meetings by time
+            meetingsToShow.sort((a, b) => {
+                const timeA = convertTimeToMinutes(a['Bid open time']);
+                const timeB = convertTimeToMinutes(b['Bid open time']);
+                return timeA - timeB;
+            });
+
+            container.innerHTML = meetingsToShow.map(meeting => createMeetingCard(meeting)).join('');
+        }
+
+        // Create meeting card HTML
+        function createMeetingCard(meeting) {
+            const meetingDate = new Date(meeting['Bid Open Date']);
+            const dateDisplay = getDateDisplay(meetingDate);
+            
+            // Parse the datetime format to get readable time
+            const time = formatMeetingTime(meeting['Bid Open Time']);
+            const city = meeting['Bid Open City'] || 'Location TBD';
+            const state = meeting['Bid Open State'] || '';
+            const location = city + (state ? `, ${state}` : '');
+            
+            const fullAddress = [
+                meeting['Bid Open Street'],
+                meeting['Bid Open City'],
+                meeting['Bid Open State'],
+                meeting['Bid Open Zip']
+            ].filter(Boolean).join(', ');
+
+            const projectUrl = meeting['BID Source ID'] ? 
+                `https://app.constructconnect.com/project/${meeting['BID Source ID']}/p?sourceType=3` : '#';
+
+            return `
+                <div class="meeting-card">
+                    <div class="meeting-header">
+                        <div class="meeting-title">${dateDisplay} • ${time}</div>
+                        <div class="meeting-time">${location}</div>
+                    </div>
+                    <div class="meeting-body">
+                        <button class="action-button maps-button" 
+                                onclick="openMaps('${fullAddress}')" 
+                                oncontextmenu="editAddress('${meeting['BID Source ID']}', '${fullAddress}'); return false;">
+                            📍 Open in Maps
+                        </button>
+                        <button class="action-button url-button" 
+                                onclick="openUrl('${projectUrl}')" 
+                                oncontextmenu="copyUrl('${projectUrl}'); return false;">
+                            🔗 View Project
+                        </button>
+                        <button class="action-button details-button" 
+                                onclick="showMeetingDetails('${meeting['BID Source ID']}')">
+                            📋 View Details
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Extract time portion from datetime for form input
+        function extractTimeFromDateTime(timeString) {
+            if (!timeString) return '';
+            try {
+                const date = new Date(timeString);
+                if (isNaN(date.getTime())) return '';
+                // Return in HH:MM format for time input
+                return date.toTimeString().substr(0, 5);
+            } catch (error) {
+                console.error('Error extracting time:', timeString, error);
+                return '';
+            }
+        }
+
+        // Format the datetime string to readable time
+        function formatMeetingTime(timeString) {
+            if (!timeString) return 'Time TBD';
+            
+            try {
+                // Handle the ISO datetime format from Google Sheets
+                const date = new Date(timeString);
+                if (isNaN(date.getTime())) return 'Time TBD';
+                
+                // Convert to local time and format
+                return date.toLocaleTimeString('en-US', { 
+                    hour: 'numeric', 
+                    minute: '2-digit',
+                    hour12: true 
+                });
+            } catch (error) {
+                console.error('Error parsing time:', timeString, error);
+                return 'Time TBD';
+            }
+        }
+
+        // Utility functions
+        function formatDateForComparison(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        function getDateDisplay(date) {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+
+            if (formatDateForComparison(date) === formatDateForComparison(today)) {
+                return 'Today';
+            } else if (formatDateForComparison(date) === formatDateForComparison(tomorrow)) {
+                return 'Tomorrow';
+            } else if (formatDateForComparison(date) === formatDateForComparison(yesterday)) {
+                return 'Yesterday';
+            } else {
+                return date.toLocaleDateString('en-US', { 
+                    weekday: 'short', 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+            }
+        }
+
+        function convertTimeToMinutes(timeString) {
+            if (!timeString) return 0;
+            
+            try {
+                // Handle the ISO datetime format from Google Sheets
+                const date = new Date(timeString);
+                if (isNaN(date.getTime())) return 0;
+                
+                return date.getHours() * 60 + date.getMinutes();
+            } catch (error) {
+                console.error('Error parsing time for sorting:', timeString, error);
+                return 0;
+            }
+        }
+
+        // Navigation functions
+        function changeDate(days) {
+            currentDate.setDate(currentDate.getDate() + days);
+            updateDateDisplay();
+            displayMeetings();
+        }
+
+        function updateDateDisplay() {
+            document.getElementById('currentDate').textContent = getDateDisplay(currentDate);
+        }
+
+        // Action button functions
+        function openMaps(address) {
+            if (address && address !== 'undefined') {
+                const encodedAddress = encodeURIComponent(address);
+                const mapsUrl = `https://maps.google.com/?q=${encodedAddress}`;
+                window.open(mapsUrl, '_blank');
+            }
+        }
+
+        function openUrl(url) {
+            if (url && url !== '#') {
+                window.open(url, '_blank');
+            }
+        }
+
+        function copyUrl(url) {
+            navigator.clipboard.writeText(url).then(() => {
+                alert('URL copied to clipboard!');
+            });
+        }
+
+        function editAddress(bidSourceId, currentAddress) {
+            const newAddress = prompt('Enter new address:', currentAddress);
+            if (newAddress && newAddress !== currentAddress) {
+                updateMeetingAddress(bidSourceId, newAddress);
+            }
+        }
+
+        // Meeting details
+        function showMeetingDetails(bidSourceId) {
+            console.log('Looking for meeting with ID:', bidSourceId, 'Type:', typeof bidSourceId);
+            console.log('Available meetings:', allMeetings.map(m => ({ id: m['BID Source ID'], type: typeof m['BID Source ID'] })));
+            const meeting = allMeetings.find(m => String(m['BID Source ID']) === String(bidSourceId));
+            if (!meeting) {
+                console.error('Meeting not found for ID:', bidSourceId);
+                alert('Meeting details not found');
+                return;
+            }
+
+            const modal = document.getElementById('meetingDetailsModal');
+            const content = document.getElementById('meetingDetailsContent');
+            
+            content.innerHTML = `
+                <div style="line-height: 1.6;">
+                    <h3 style="color: #3D74B6; margin-bottom: 15px;">${meeting['Project Name'] || 'Untitled Project'}</h3>
+                    <p><strong>Date:</strong> ${new Date(meeting['Bid Open Date']).toDateString()}</p>
+                    <p><strong>Time:</strong> ${meeting['Bid open time']}</p>
+                    <p><strong>Location:</strong> ${[meeting['Bid Open Street'], meeting['Bid Open City'], meeting['Bid Open State'], meeting['Bid Open Zip']].filter(Boolean).join(', ')}</p>
+                    <p><strong>Description:</strong> ${meeting['Project Description'] || 'No description available'}</p>
+                    <p><strong>Bid Info:</strong> ${meeting['Bid Project Info'] || 'No additional info'}</p>
+                    ${meeting['Low Bid Contractor'] ? `<p><strong>Low Bidder:</strong> ${meeting['Low Bid Contractor']} - $${meeting['Low Bid Amount'] || 'TBD'}</p>` : ''}
+                    ${meeting['Low Bid Contractor 2'] ? `<p><strong>2nd Low Bidder:</strong> ${meeting['Low Bid Contractor 2']} - $${meeting['Low Bid Amount 2'] || 'TBD'}</p>` : ''}
+                    ${meeting['Low Bid Contractor 3'] ? `<p><strong>3rd Low Bidder:</strong> ${meeting['Low Bid Contractor 3']} - $${meeting['Low Bid Amount 3'] || 'TBD'}</p>` : ''}
+                    <button class="submit-button" onclick="editMeeting('${bidSourceId}')" style="margin-top: 20px;">
+                        Edit Meeting
+                    </button>
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+        }
+
+        // Search functionality
+        function toggleSearch() {
+            isSearchMode = !isSearchMode;
+            const container = document.getElementById('searchContainer');
+            const searchInput = document.getElementById('searchInput');
+            
+            if (isSearchMode) {
+                container.style.display = 'block';
+                searchInput.focus();
+                filteredMeetings = [...allMeetings];
+            } else {
+                container.style.display = 'none';
+                searchInput.value = '';
+                filteredMeetings = [...allMeetings];
+            }
+            
+            displayMeetings();
+        }
+
+        function searchMeetings(query) {
+            if (!query.trim()) {
+                filteredMeetings = [...allMeetings];
+            } else {
+                const searchTerm = query.toLowerCase();
+                filteredMeetings = allMeetings.filter(meeting => {
+                    return Object.values(meeting).some(value => 
+                        value && value.toString().toLowerCase().includes(searchTerm)
+                    );
+                });
+            }
+            displayMeetings();
+        }
+
+        // Add meeting modal
+        function showAddMeetingModal() {
+            document.getElementById('addMeetingModal').style.display = 'block';
+            // Set default date to current date
+            document.getElementById('meetingDate').value = formatDateForComparison(currentDate);
+        }
+
+        function toggleAddMethod() {
+            const method = document.getElementById('addMethod').value;
+            const manualForm = document.getElementById('manualForm');
+            const fileForm = document.getElementById('fileUploadForm');
+            
+            if (method === 'manual') {
+                manualForm.style.display = 'block';
+                fileForm.style.display = 'none';
+            } else {
+                manualForm.style.display = 'none';
+                fileForm.style.display = 'block';
+            }
+        }
+
+        // Add meeting function
+        async function addMeeting() {
+            // Convert time input to datetime format if provided
+            const timeInput = document.getElementById('meetingTime').value;
+            let formattedTime = '';
+            if (timeInput) {
+                const [hours, minutes] = timeInput.split(':');
+                const date = new Date('1899-12-30');
+                date.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+                formattedTime = date.toISOString();
+            }
+
+            const meetingData = {
+                'Project Name': document.getElementById('projectName').value,
+                'Bid Open Date': document.getElementById('meetingDate').value,
+                'Bid Open Time': formattedTime,
+                'Bid Open Street': document.getElementById('streetAddress').value,
+                'Bid Open City': document.getElementById('city').value,
+                'Bid Open State': document.getElementById('state').value,
+                'Bid Open Zip': document.getElementById('zipCode').value,
+                'BID Source ID': document.getElementById('bidSourceId').value || String(Date.now()),
+                'Projec Description': document.getElementById('projectDescription').value // Note: matches your sheet's typo
+            };
+
+            console.log('Adding meeting with data:', meetingData);
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'addMeeting',
+                        data: meetingData
+                    })
+                });
+
+                const result = await response.json();
+                console.log('Add meeting response:', result);
+                
+                if (result.status === 'success') {
+                    alert('Meeting added successfully!');
+                    closeModal('addMeetingModal');
+                    loadMeetings();
+                } else {
+                    alert('Error adding meeting: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error adding meeting:', error);
+                alert('Error adding meeting. Please try again.');
+            }
+        }
+
+        // Edit meeting function
+        function editMeeting(bidSourceId) {
+            const meeting = allMeetings.find(m => String(m['BID Source ID']) === String(bidSourceId));
+            if (!meeting) {
+                console.error('Meeting not found for editing ID:', bidSourceId);
+                return;
+            }
+
+            closeModal('meetingDetailsModal');
+            
+            const modal = document.getElementById('editMeetingModal');
+            const form = document.getElementById('editMeetingForm');
+            
+            form.innerHTML = `
+                <div class="form-group">
+                    <label>Project Name:</label>
+                    <input type="text" id="editProjectName" value="${meeting['Project Name'] || ''}">
+                </div>
+                <div class="form-group">
+                    <label>Meeting Date:</label>
+                    <input type="date" id="editMeetingDate" value="${meeting['Bid Open Date']}">
+                </div>
+                <div class="form-group">
+                    <label>Meeting Time:</label>
+                    <input type="time" id="editMeetingTime" value="${extractTimeFromDateTime(meeting['Bid Open Time'])}">
+                </div>
+                <div class="form-group">
+                    <label>Street Address:</label>
+                    <input type="text" id="editStreetAddress" value="${meeting['Bid Open Street'] || ''}">
+                </div>
+                <div class="form-group">
+                    <label>City:</label>
+                    <input type="text" id="editCity" value="${meeting['Bid Open City'] || ''}">
+                </div>
+                <div class="form-group">
+                    <label>State:</label>
+                    <input type="text" id="editState" value="${meeting['Bid Open State'] || ''}">
+                </div>
+                <div class="form-group">
+                    <label>Zip Code:</label>
+                    <input type="text" id="editZipCode" value="${meeting['Bid Open Zip'] || ''}">
+                </div>
+                <div class="form-group">
+                    <label>Project Description:</label>
+                    <textarea id="editProjectDescription" rows="3">${meeting['Projec Description'] || meeting['Project Description'] || ''}</textarea>
+                </div>
+                <button class="submit-button" onclick="updateMeeting('${bidSourceId}')">Update Meeting</button>
+            `;
+            
+            modal.style.display = 'block';
+        }
+
+        // Update meeting function
+        async function updateMeeting(bidSourceId) {
+            // Convert time input back to the datetime format expected by Google Sheets
+            const timeInput = document.getElementById('editMeetingTime').value;
+            let formattedTime = '';
+            if (timeInput) {
+                // Convert HH:MM to the datetime format Google Sheets expects
+                const [hours, minutes] = timeInput.split(':');
+                const date = new Date('1899-12-30');
+                date.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+                formattedTime = date.toISOString();
+            }
+
+            const meetingData = {
+                'BID Source ID': String(bidSourceId),
+                'Project Name': document.getElementById('editProjectName').value,
+                'Bid Open Date': document.getElementById('editMeetingDate').value,
+                'Bid Open Time': formattedTime,
+                'Bid Open Street': document.getElementById('editStreetAddress').value,
+                'Bid Open City': document.getElementById('editCity').value,
+                'Bid Open State': document.getElementById('editState').value,
+                'Bid Open Zip': document.getElementById('editZipCode').value,
+                'Projec Description': document.getElementById('editProjectDescription').value
+            };
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'updateMeeting',
+                        data: meetingData
+                    })
+                });
+
+                const result = await response.json();
+                if (result.status === 'success') {
+                    alert('Meeting updated successfully!');
+                    closeModal('editMeetingModal');
+                    loadMeetings();
+                } else {
+                    alert('Error updating meeting: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error updating meeting:', error);
+                alert('Error updating meeting. Please try again.');
+            }
+        }
+
+        // File upload handling
+        function handleFileUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                uploadedFileData = {
+                    name: file.name,
+                    type: file.type,
+                    data: e.target.result
+                };
+                document.getElementById('processUploadBtn').style.display = 'block';
+            };
+            reader.readAsText(file);
+        }
+
+        function processUpload() {
+            if (!uploadedFileData) return;
+
+            if (uploadedFileData.name.endsWith('.ics')) {
+                processICSFile(uploadedFileData.data);
+            } else if (uploadedFileData.name.endsWith('.csv')) {
+                processCSVFile(uploadedFileData.data);
+            } else {
+                alert('Unsupported file type. Please use ICS or CSV files.');
+            }
+        }
+
+        function processICSFile(icsData) {
+            console.log('Processing ICS file:', icsData);
+            const lines = icsData.split(/\r?\n/);
+            let currentEvent = {};
+            let events = [];
+            let currentProperty = '';
+            let currentValue = '';
+
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i].trim();
+                
+                // Handle line continuation (lines starting with space or tab)
+                if (line.startsWith(' ') || line.startsWith('\t')) {
+                    currentValue += line.substring(1);
+                    continue;
+                }
+                
+                // Process previous property if we have one
+                if (currentProperty && currentValue) {
+                    processICSProperty(currentEvent, currentProperty, currentValue);
+                }
+                
+                if (line === 'BEGIN:VEVENT') {
+                    currentEvent = {};
+                    currentProperty = '';
+                    currentValue = '';
+                } else if (line === 'END:VEVENT') {
+                    if (Object.keys(currentEvent).length > 0) {
+                        events.push(currentEvent);
+                    }
+                    currentProperty = '';
+                    currentValue = '';
+                } else if (line.includes(':')) {
+                    const colonIndex = line.indexOf(':');
+                    currentProperty = line.substring(0, colonIndex);
+                    currentValue = line.substring(colonIndex + 1);
+                }
+            }
+
+            console.log('Parsed ICS events:', events);
+            addEventsFromUpload(events.map(event => convertICSToMeetingData(event)));
+        }
+
+        function processICSProperty(event, property, value) {
+            if (property.startsWith('DTSTART')) {
+                // Parse YYYYMMDDTHHMMSS format
+                const dateStr = value.replace(/[^\d]/g, '');
+                if (dateStr.length >= 8) {
+                    const year = dateStr.substr(0, 4);
+                    const month = dateStr.substr(4, 2);
+                    const day = dateStr.substr(6, 2);
+                    event.date = `${month}/${day}/${year}`; // Match your JSON format
+                    
+                    if (dateStr.length >= 14) {
+                        const hour = dateStr.substr(8, 2);
+                        const minute = dateStr.substr(10, 2);
+                        // Convert to datetime format like your JSON
+                        const datetime = new Date(`1899-12-30T${hour}:${minute}:00.000Z`);
+                        event.time = datetime.toISOString();
+                    }
+                }
+            } else if (property === 'SUMMARY') {
+                event.summary = value;
+                // Extract Project ID from summary like "(Project ID 5849512)"
+                const projectIdMatch = value.match(/\(Project ID (\d+)\)/);
+                if (projectIdMatch) {
+                    event.projectId = projectIdMatch[1];
+                    event.projectName = value.replace(/\s*\(Project ID \d+\)\s*$/, '').trim();
+                } else {
+                    event.projectName = value;
+                }
+            } else if (property === 'LOCATION') {
+                event.location = value;
+                // Parse address: "1350 W Hawley St, Mundelein IL. 60060"
+                const addressParts = value.split(',').map(part => part.trim());
+                event.street = addressParts[0] || '';
+                
+                if (addressParts[1]) {
+                    // Parse "Mundelein IL. 60060"
+                    const cityStateZip = addressParts[1];
+                    const zipMatch = cityStateZip.match(/(\d{5}(-\d{4})?)$/);
+                    if (zipMatch) {
+                        event.zip = zipMatch[1];
+                        const beforeZip = cityStateZip.replace(/\s*\d{5}(-\d{4})?\s*$/, '').trim();
+                        const stateMatch = beforeZip.match(/\b([A-Z]{2}\.?)\s*$/);
+                        if (stateMatch) {
+                            event.state = stateMatch[1];
+                            event.city = beforeZip.replace(/\s*[A-Z]{2}\.?\s*$/, '').trim();
+                        } else {
+                            event.city = beforeZip;
+                        }
+                    } else {
+                        event.city = cityStateZip;
+                    }
+                }
+            } else if (property === 'DESCRIPTION') {
+                event.description = value.replace(/\\r\\n/g, '\n').replace(/\\n/g, '\n');
+                
+                // Extract Bid Project Info
+                const bidInfoMatch = event.description.match(/Bid Project Info:\s*([^\\n]*(?:\\n[^\\n]*)*?)(?=\\n[A-Z][^:]*:|$)/);
+                if (bidInfoMatch) {
+                    event.bidProjectInfo = bidInfoMatch[1].replace(/\\n/g, ' ').trim();
+                }
+                
+                // Extract Public Body
+                const publicBodyMatch = event.description.match(/Public Body:\s*([^\\n]*)/);
+                if (publicBodyMatch) {
+                    event.publicBody = publicBodyMatch[1].trim();
+                }
+            }
+        }
+
+        function convertICSToMeetingData(icsEvent) {
+            return {
+                'Project Name': icsEvent.projectName || 'Imported Meeting',
+                'Bid Open Date': icsEvent.date || '',
+                'Bid Open Time': icsEvent.time || '',
+                'Bid Open Street': icsEvent.street || '',
+                'Bid Open City': icsEvent.city || '',
+                'Bid Open State': icsEvent.state || '',
+                'Bid Open Zip': icsEvent.zip || '',
+                'BID Source ID': icsEvent.projectId || String(Date.now()),
+                'Projec Description': icsEvent.description || '', // Note: typo in your sheet
+                'Bid Project Info': icsEvent.bidProjectInfo || '',
+                'Public Body': icsEvent.publicBody || ''
+            };
+        }
+
+        function processCSVFile(csvData) {
+            console.log('Processing CSV file:', csvData);
+            const lines = csvData.split('\n');
+            if (lines.length < 2) {
+                alert('CSV file appears to be empty or invalid');
+                return;
+            }
+            
+            // Parse CSV properly handling quoted values
+            const parseCSVLine = (line) => {
+                const result = [];
+                let current = '';
+                let inQuotes = false;
+                
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        result.push(current.trim());
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                result.push(current.trim());
+                return result;
+            };
+            
+            const headers = parseCSVLine(lines[0]).map(h => h.replace(/"/g, ''));
+            const events = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                const values = parseCSVLine(line).map(v => v.replace(/"/g, ''));
+                const event = {};
+                
+                headers.forEach((header, index) => {
+                    event[header] = values[index] || '';
+                });
+                
+                // Only add if we have essential data
+                if (event['Bid Open Date'] || event['Project Name']) {
+                    events.push(event);
+                }
+            }
+
+            console.log('Parsed CSV events:', events);
+            if (events.length === 0) {
+                alert('No valid meeting data found in CSV file');
+                return;
+            }
+            
+            addEventsFromUpload(events);
+        }
+
+        async function addEventsFromUpload(events) {
+            console.log('Adding events from upload:', events);
+            let successCount = 0;
+            let errorCount = 0;
+            
+            for (let event of events) {
+                try {
+                    // Ensure required data format matches your JSON structure
+                    const meetingData = {
+                        'Project Name': event['Project Name'] || event.summary || event.projectName || 'Imported Meeting',
+                        'Bid Open Date': event['Bid Open Date'] || event.date || '',
+                        'Bid Open Time': event['Bid Open Time'] || event.time || '',
+                        'Bid Open Street': event['Bid Open Street'] || event.location || event.street || '',
+                        'Bid Open City': event['Bid Open City'] || event.city || '',
+                        'Bid Open State': event['Bid Open State'] || event.state || '',
+                        'Bid Open Zip': event['Bid Open Zip'] || event.zip || '',
+                        'BID Source ID': event['BID Source ID'] || event.projectId || String(Date.now() + Math.random()),
+                        'Projec Description': event['Projec Description'] || event['Project Description'] || event.description || '',
+                        'Bid Project Info': event['Bid Project Info'] || event.bidProjectInfo || '',
+                        'Public Body': event['Public Body'] || event.publicBody || ''
+                    };
+
+                    console.log('Uploading meeting data:', meetingData);
+
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            action: 'addMeeting',
+                            data: meetingData
+                        })
+                    });
+
+                    const result = await response.json();
+                    console.log('Upload response for meeting:', result);
+                    
+                    if (result.status === 'success') {
+                        successCount++;
+                    } else {
+                        console.error('Failed to add meeting:', result.message);
+                        errorCount++;
+                    }
+                } catch (error) {
+                    console.error('Error adding event:', error);
+                    errorCount++;
+                }
+            }
+
+            if (successCount > 0) {
+                alert(`Successfully imported ${successCount} meetings!${errorCount > 0 ? ` (${errorCount} failed)` : ''}`);
+                closeModal('addMeetingModal');
+                loadMeetings();
+            } else {
+                alert('Failed to import any meetings. Please check the file format and try again.');
+            }
+        }
+
+        // Week view functionality
+        function setupWeekView() {
+            currentWeekStart = new Date(currentDate);
+            currentWeekStart.setDate(currentDate.getDate() - currentDate.getDay());
+            updateWeekView();
+        }
+
+        function changeWeek(direction) {
+            currentWeekStart.setDate(currentWeekStart.getDate() + (direction * 7));
+            updateWeekView();
+        }
+
+        function updateWeekView() {
+            const weekTitle = document.getElementById('weekTitle');
+            const weekDays = document.getElementById('weekDays');
+            
+            const endDate = new Date(currentWeekStart);
+            endDate.setDate(endDate.getDate() + 6);
+            
+            weekTitle.textContent = `${currentWeekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+            
+            weekDays.innerHTML = '';
+            
+            for (let i = 0; i < 7; i++) {
+                const day = new Date(currentWeekStart);
+                day.setDate(day.getDate() + i);
+                
+                const dayElement = document.createElement('div');
+                dayElement.className = 'week-day';
+                
+                const hasMeeting = allMeetings.some(meeting => {
+                    const meetingDate = new Date(meeting['Bid Open Date']);
+                    return formatDateForComparison(meetingDate) === formatDateForComparison(day);
+                });
+                
+                if (hasMeeting) {
+                    dayElement.classList.add('has-meeting');
+                }
+                
+                if (formatDateForComparison(day) === formatDateForComparison(currentDate)) {
+                    dayElement.classList.add('selected');
+                }
+                
+                dayElement.innerHTML = `
+                    <div>${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][i]}</div>
+                    <div>${day.getDate()}</div>
+                `;
+                
+                dayElement.onclick = () => {
+                    currentDate = new Date(day);
+                    updateDateDisplay();
+                    displayMeetings();
+                    toggleWeekView();
+                };
+                
+                weekDays.appendChild(dayElement);
+            }
+        }
+
+        function toggleWeekView() {
+            const weekView = document.getElementById('weekView');
+            const isVisible = weekView.style.display !== 'none';
+            weekView.style.display = isVisible ? 'none' : 'block';
+            
+            if (!isVisible) {
+                setupWeekView();
+            }
+        }
+
+        // Modal functions
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            // Reset forms
+            if (modalId === 'addMeetingModal') {
+                document.getElementById('addMethod').value = 'manual';
+                toggleAddMethod();
+                document.querySelectorAll('#manualForm input, #manualForm textarea').forEach(input => {
+                    input.value = '';
+                });
+                uploadedFileData = null;
+                document.getElementById('processUploadBtn').style.display = 'none';
+            }
+        }
+
+        // Address update function
+        async function updateMeetingAddress(bidSourceId, newAddress) {
+            const meeting = allMeetings.find(m => String(m['BID Source ID']) === String(bidSourceId));
+            if (!meeting) return;
+
+            // Parse address components (basic parsing)
+            const addressParts = newAddress.split(',').map(part => part.trim());
+            const meetingData = {
+                'BID Source ID': String(bidSourceId),
+                'Bid Open Street': addressParts[0] || '',
+                'Bid Open City': addressParts[1] || meeting['Bid Open City'],
+                'Bid Open State': addressParts[2] || meeting['Bid Open State'],
+                'Bid Open Zip': addressParts[3] || meeting['Bid Open Zip']
+            };
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'updateMeeting',
+                        data: meetingData
+                    })
+                });
+
+                const result = await response.json();
+                if (result.status === 'success') {
+                    alert('Address updated successfully!');
+                    loadMeetings();
+                } else {
+                    alert('Error updating address: ' + result.message);
+                }
+            } catch (error) {
+                console.error('Error updating address:', error);
+                alert('Error updating address. Please try again.');
+            }
+        }
+
+        // Touch and gesture support for mobile
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        document.addEventListener('touchstart', function(e) {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        });
+
+        document.addEventListener('touchend', function(e) {
+            if (!touchStartX || !touchStartY) return;
+            
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            
+            const diffX = touchStartX - touchEndX;
+            const diffY = touchStartY - touchEndY;
+            
+            // Only handle horizontal swipes that are longer than vertical
+            if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+                if (diffX > 0) {
+                    // Swipe left - next day
+                    changeDate(1);
+                } else {
+                    // Swipe right - previous day
+                    changeDate(-1);
+                }
+            }
+            
+            touchStartX = 0;
+            touchStartY = 0;
+        });
+
+        // Add double-tap to show week view
+        let lastTap = 0;
+        document.addEventListener('touchend', function(e) {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
+            if (tapLength < 500 && tapLength > 0) {
+                // Double tap detected
+                toggleWeekView();
+            }
+            lastTap = currentTime;
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            switch(e.key) {
+                case 'ArrowLeft':
+                    changeDate(-1);
+                    break;
+                case 'ArrowRight':
+                    changeDate(1);
+                    break;
+                case 'w':
+                case 'W':
+                    toggleWeekView();
+                    break;
+                case 's':
+                case 'S':
+                    if (e.ctrlKey || e.metaKey) {
+                        e.preventDefault();
+                        toggleSearch();
+                    }
+                    break;
+                case '+':
+                case '=':
+                    showAddMeetingModal();
+                    break;
+                case 'Escape':
+                    // Close any open modals
+                    document.querySelectorAll('.modal').forEach(modal => {
+                        modal.style.display = 'none';
+                    });
+                    break;
+            }
+        });
+    </script>
+</body>
+</html>';
     let meetingsData = [];
     let currentViewDate = new Date();
     let isWeekView = false;
