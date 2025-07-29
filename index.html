@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meeting Planner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Color Palette */
+        :root {
+            --primary-orange: #FE7743;
+            --dark-blue: #273F4F;
+            --medium-blue: #447D9B;
+            --light-grey: #D7D7D7;
+            --white: #FFFFFF;
+            --black: #000000;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-grey);
+            color: var(--dark-blue);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+            flex-grow: 1;
+        }
+
+        /* Header and Date Navigation */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background-color: var(--dark-blue);
+            color: var(--white);
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header button {
+            background: none;
+            border: none;
+            color: var(--white);
+            font-size: 1.8rem; /* Larger for easy tapping */
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: background-color 0.2s ease;
+            min-width: 48px; /* Touch target size */
+            min-height: 48px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .header button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .date-display {
+            font-size: 1.5rem; /* Larger text */
+            font-weight: 600;
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        /* Meeting Cards */
+        .meetings-container {
+            padding: 1rem 0;
+        }
+
+        .meeting-card {
+            background-color: var(--white);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            border: 2px solid var(--medium-blue); /* Clear distinction */
+        }
+
+        .meeting-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--dark-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .meeting-card-header .time {
+            font-size: 1.5rem;
+            color: var(--primary-orange);
+        }
+
+        .meeting-card-header .location {
+            font-size: 1.2rem;
+            color: var(--medium-blue);
+        }
+
+        .meeting-buttons {
+            display: flex;
+            flex-direction: column; /* Stack buttons for mobile */
+            gap: 0.8rem;
+        }
+
+        .meeting-buttons button {
+            background-color: var(--medium-blue);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            padding: 1rem 1.2rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            min-width: 100%; /* Full width on mobile */
+            min-height: 56px; /* Large tap target */
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .meeting-buttons button:hover {
+            background-color: #3a6b86; /* Slightly darker blue */
+            transform: translateY(-2px);
+        }
+
+        .meeting-buttons button:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+
+        /* Floating Action Buttons */
+        .fab-container {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            left: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            z-index: 1000;
+        }
+
+        .fab {
+            background-color: var(--primary-orange);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .fab:hover {
+            background-color: #e66a3b;
+            transform: translateY(-2px);
+        }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: var(--white);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            position: relative;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .modal-close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: var(--dark-blue);
+            min-width: 48px;
+            min-height: 48px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            transition: background-color 0.2s ease;
+        }
+
+        .modal-close-button:hover {
+            background-color: var(--light-grey);
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            color: var(--dark-blue);
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .modal-body p {
+            margin-bottom: 1rem;
+            line-height: 1.5;
+            font-size: 1.1rem;
+        }
+
+        .modal-body strong {
+            color: var(--primary-orange);
+        }
+
+        .modal-form label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark-blue);
+            font-size: 1.1rem;
+        }
+
+        .modal-form input[type="text"],
+        .modal-form textarea,
+        .modal-form input[type="date"],
+        .modal-form input[type="time"],
+        .modal-form input[type="number"] {
+            width: calc(100% - 20px);
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--light-grey);
+            border-radius: 8px;
+            font-size: 1rem;
+            color: var(--dark-blue);
+            background-color: #f9f9f9;
+        }
+
+        .modal-form textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .modal-form button {
+            background-color: var(--primary-orange);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            padding: 1rem 1.5rem;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            width: 100%;
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+
+        .modal-form button:hover {
+            background-color: #e66a3b;
+        }
+
+        .modal-form .file-upload-section {
+            border: 2px dashed var(--light-grey);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            background-color: #fefefe;
+        }
+
+        .modal-form .file-upload-section label {
+            display: block;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            color: var(--medium-blue);
+        }
+
+        .modal-form .file-upload-section input[type="file"] {
+            display: none;
+        }
+
+        .modal-form .file-upload-section .custom-file-upload {
+            background-color: var(--medium-blue);
+            color: var(--white);
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            display: inline-block;
+            font-size: 1rem;
+            transition: background-color 0.2s ease;
+        }
+
+        .modal-form .file-upload-section .custom-file-upload:hover {
+            background-color: #3a6b86;
+        }
+
+        .modal-form .file-upload-section p {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+
+        .modal-form .or-divider {
+            text-align: center;
+            margin: 1.5rem 0;
+            color: #888;
+            font-weight: 600;
+            position: relative;
+        }
+
+        .modal-form .or-divider::before,
+        .modal-form .or-divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background-color: var(--light-grey);
+        }
+
+        .modal-form .or-divider::before {
+            left: 0;
+        }
+
+        .modal-form .or-divider::after {
+            right: 0;
+        }
+
+        /* Week View */
+        .week-view-toggle {
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        .week-view-toggle button {
+            background-color: var(--medium-blue);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            padding: 0.8rem 1.2rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            font-weight: 600;
+        }
+
+        .week-view-toggle button:hover {
+            background-color: #3a6b86;
+        }
+
+        .week-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            padding: 1rem 0;
+            overflow-x: auto; /* Enable horizontal scrolling for weeks */
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+            scroll-snap-type: x mandatory; /* Snap to weeks */
+            scrollbar-width: none; /* Hide scrollbar for Firefox */
+            -ms-overflow-style: none;  /* Hide scrollbar for IE and Edge */
+        }
+
+        .week-container::-webkit-scrollbar {
+            display: none; /* Hide scrollbar for Chrome, Safari, Opera */
+        }
+
+        .week-day-card {
+            background-color: var(--white);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease, background-color 0.2s ease;
+            border: 2px solid transparent;
+            scroll-snap-align: start; /* Snap point for each day */
+        }
+
+        .week-day-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .week-day-card.active-day {
+            border-color: var(--primary-orange);
+            background-color: #fffaf7; /* Light orange tint */
+        }
+
+        .week-day-card .day-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--medium-blue);
+        }
+
+        .week-day-card .day-date {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.2rem;
+        }
+
+        .week-day-card .meeting-count {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-orange);
+            margin-top: 0.5rem;
+        }
+
+        /* Search Results */
+        .search-results-container {
+            margin-top: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .search-results-container .meeting-card {
+            margin-bottom: 0.8rem;
+            padding: 1rem;
+            border: 1px solid var(--light-grey);
+        }
+
+        .search-results-container .meeting-card .meeting-card-header {
+            font-size: 1.1rem;
+        }
+
+        .search-results-container .meeting-card .meeting-card-header .time {
+            font-size: 1.2rem;
+        }
+
+        .search-results-container .meeting-card .meeting-buttons button {
+            padding: 0.8rem;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive adjustments */
+        @media (min-width: 768px) {
+            .meeting-buttons {
+                flex-direction: row; /* Row for desktop */
+                justify-content: center;
+            }
+
+            .meeting-buttons button {
+                width: auto; /* Auto width on desktop */
+                min-width: 180px;
+            }
+
+            .fab-container {
+                justify-content: flex-end; /* Align to right on desktop */
+                gap: 1.5rem;
+            }
+
+            .fab.search-fab {
+                margin-right: 1rem; /* Space out search and add buttons */
+            }
+
+            .modal-content {
+                max-width: 600px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <button id="prevDayBtn">&lt;</button>
+        <div class="date-display" id="currentDateDisplay"></div>
+        <button id="nextDayBtn">&gt;</button>
+    </div>
+
+    <div class="container">
+        <div class="week-view-toggle">
+            <button id="toggleWeekViewBtn">Show Week View</button>
+        </div>
+        <div class="week-container" id="weekContainer" style="display: none;">
+            <!-- Week day cards will be injected here -->
+        </div>
+
+        <div class="meetings-container" id="meetingsContainer">
+            <!-- Meeting cards will be injected here -->
+            <p id="noMeetingsMessage" style="text-align: center; margin-top: 2rem; font-size: 1.2rem; color: #666;">No meetings scheduled for this day.</p>
+        </div>
+    </div>
+
+    <!-- Add Meeting FAB -->
+    <div class="fab-container">
+        <button class="fab search-fab" id="searchFab" aria-label="Search Meetings">🔍</button>
+        <button class="fab add-fab" id="addMeetingFab" aria-label="Add New Meeting">+</button>
+    </div>
+
+    <!-- Modals -->
+
+    <!-- More Info / Edit Meeting Modal -->
+    <div class="modal-overlay" id="moreInfoModal">
+        <div class="modal-content">
+            <button class="modal-close-button" aria-label="Close Modal">&times;</button>
+            <h2 class="modal-title">Meeting Details</h2>
+            <form class="modal-form" id="editMeetingForm">
+                <input type="hidden" id="editMeetingId">
+                <label for="editProjectName">Project Name:</label>
+                <input type="text" id="editProjectName" name="Project Name">
+
+                <label for="editMeetingDate">Meeting Date:</label>
+                <input type="date" id="editMeetingDate" name="Bid Open Date">
+
+                <label for="editMeetingTime">Meeting Time:</label>
+                <input type="time" id="editMeetingTime" name="Bid Open Time"> <!-- Assuming a 'Bid Open Time' column or will derive from date -->
+
+                <label for="editMeetingStreet">Street:</label>
+                <input type="text" id="editMeetingStreet" name="Bid Open Street">
+                <label for="editMeetingCity">City:</label>
+                <input type="text" id="editMeetingCity" name="Bid Open City">
+                <label for="editMeetingState">State:</label>
+                <input type="text" id="editMeetingState" name="Bid Open State">
+                <label for="editMeetingZip">Zip:</label>
+                <input type="text" id="editMeetingZip" name="Bid Open Zip">
+
+                <label for="editProjectDescription">Project Description:</label>
+                <textarea id="editProjectDescription" name="Projec Description"></textarea>
+
+                <label for="editBidProjectInfo">Bid Project Info:</label>
+                <textarea id="editBidProjectInfo" name="Bid Project Info"></textarea>
+
+                <label for="editLowBidContractor1">Low Bid Contractor 1:</label>
+                <input type="text" id="editLowBidContractor1" name="Low Bid Contractor">
+                <label for="editLowBidAmount1">Low Bid Amount 1:</label>
+                <input type="number" id="editLowBidAmount1" name="Low Bid Amount">
+
+                <label for="editLowBidContractor2">Low Bid Contractor 2:</label>
+                <input type="text" id="editLowBidContractor2" name="Low Bid Contractor 2">
+                <label for="editLowBidAmount2">Low Bid Amount 2:</label>
+                <input type="number" id="editLowBidAmount2" name="Low Bid Amount 2">
+
+                <label for="editLowBidContractor3">Low Bid Contractor 3:</label>
+                <input type="text" id="editLowBidContractor3" name="Low Bid Contractor 3">
+                <label for="editLowBidAmount3">Low Bid Amount 3:</label>
+                <input type="number" id="editLowBidAmount3" name="Low Bid Amount 3">
+
+                <button type="submit">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add New Meeting Modal -->
+    <div class="modal-overlay" id="addMeetingModal">
+        <div class="modal-content">
+            <button class="modal-close-button" aria-label="Close Modal">&times;</button>
+            <h2 class="modal-title">Add New Meeting</h2>
+            <form class="modal-form" id="addMeetingForm">
+                <div class="file-upload-section">
+                    <label>Upload Meeting File(s)</label>
+                    <input type="file" id="fileUploadInput" accept=".ics,.csv,.tsv" multiple>
+                    <label for="fileUploadInput" class="custom-file-upload">Choose Files</label>
+                    <p>Supported formats: .ics, .csv, .tsv</p>
+                    <div id="uploadedFileNames" style="margin-top: 10px; font-size: 0.9rem; color: #555;"></div>
+                </div>
+
+                <div class="or-divider">OR</div>
+
+                <label for="addProjectName">Project Name:</label>
+                <input type="text" id="addProjectName" name="Project Name" required>
+
+                <label for="addMeetingDate">Meeting Date:</label>
+                <input type="date" id="addMeetingDate" name="Bid Open Date" required>
+
+                <label for="addMeetingTime">Meeting Time:</label>
+                <input type="time" id="addMeetingTime" name="Bid Open Time">
+
+                <label for="addMeetingStreet">Street:</label>
+                <input type="text" id="addMeetingStreet" name="Bid Open Street" required>
+                <label for="addMeetingCity">City:</label>
+                <input type="text" id="addMeetingCity" name="Bid Open City" required>
+                <label for="addMeetingState">State:</label>
+                <input type="text" id="addMeetingState" name="Bid Open State" required>
+                <label for="addMeetingZip">Zip:</label>
+                <input type="text" id="addMeetingZip" name="Bid Open Zip">
+
+                <label for="addProjectDescription">Project Description:</label>
+                <textarea id="addProjectDescription" name="Projec Description"></textarea>
+
+                <label for="addBidProjectInfo">Bid Project Info:</label>
+                <textarea id="addBidProjectInfo" name="Bid Project Info"></textarea>
+
+                <label for="addLowBidContractor1">Low Bid Contractor 1:</label>
+                <input type="text" id="addLowBidContractor1" name="Low Bid Contractor">
+                <label for="addLowBidAmount1">Low Bid Amount 1:</label>
+                <input type="number" id="addLowBidAmount1" name="Low Bid Amount">
+
+                <button type="submit">Add Meeting Manually</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Address Edit Modal -->
+    <div class="modal-overlay" id="addressEditModal">
+        <div class="modal-content">
+            <button class="modal-close-button" aria-label="Close Modal">&times;</button>
+            <h2 class="modal-title">Edit Meeting Address</h2>
+            <form class="modal-form" id="editAddressForm">
+                <input type="hidden" id="editAddressMeetingId">
+                <label for="editAddressInput">Full Address:</label>
+                <input type="text" id="editAddressInput" placeholder="Enter new address" required>
+                <button type="submit">Update Address</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Search Modal -->
+    <div class="modal-overlay" id="searchModal">
+        <div class="modal-content">
+            <button class="modal-close-button" aria-label="Close Modal">&times;</button>
+            <h2 class="modal-title">Search Meetings</h2>
+            <input type="text" id="searchInput" placeholder="Search by project name, location, etc." style="width: calc(100% - 20px); padding: 0.8rem; border: 1px solid var(--light-grey); border-radius: 8px; font-size: 1rem; margin-bottom: 1rem;">
+            <div id="searchResults" class="search-results-container">
+                <!-- Search results will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Box Modal (for alerts/confirmations) -->
+    <div class="modal-overlay" id="messageBoxModal">
+        <div class="modal-content">
+            <h2 class="modal-title" id="messageBoxTitle"></h2>
+            <p id="messageBoxContent" style="text-align: center; margin-bottom: 1.5rem; font-size: 1.1rem;"></p>
+            <div style="display: flex; justify-content: center; gap: 1rem;">
+                <button id="messageBoxConfirmBtn" style="background-color: var(--primary-orange); color: var(--white); border: none; border-radius: 8px; padding: 0.8rem 1.5rem; font-size: 1rem; cursor: pointer; transition: background-color 0.2s ease; display: none;">OK</button>
+                <button id="messageBoxCancelBtn" style="background-color: var(--medium-blue); color: var(--white); border: none; border-radius: 8px; padding: 0.8rem 1.5rem; font-size: 1rem; cursor: pointer; transition: background-color 0.2s ease; display: none;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // --- Global Variables and Constants ---
+        const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwcaV6AYdPSeMCtXUkdeFUYcFNOkJcuPasOAk5iZ4SNTyypgHze9djtJIRoVXr7QXhBgg/exec';
+        let meetingsData = []; // Stores all fetched meeting data
+        let currentViewDate = new Date(); // Current date being displayed
+        let isWeekView = false; // State for week view toggle
+
+        // --- DOM Elements ---
+        const currentDateDisplay = document.getElementById('currentDateDisplay');
+        const prevDayBtn = document.getElementById('prevDayBtn');
+        const nextDayBtn = document.getElementById('nextDayBtn');
+        const meetingsContainer = document.getElementById('meetingsContainer');
+        const noMeetingsMessage = document.getElementById('noMeetingsMessage');
+
+        const addMeetingFab = document.getElementById('addMeetingFab');
+        const searchFab = document.getElementById('searchFab');
+
+        // Modals
+        const moreInfoModal = document.getElementById('moreInfoModal');
+        const addMeetingModal = document.getElementById('addMeetingModal');
+        const addressEditModal = document.getElementById('addressEditModal');
+        const searchModal = document.getElementById('searchModal');
+        const messageBoxModal = document.getElementById('messageBoxModal');
+
+        // Close buttons for modals
+        document.querySelectorAll('.modal-close-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.target.closest('.modal-overlay').classList.remove('active');
+            });
+        });
+
+        // Forms inside modals
+        const editMeetingForm = document.getElementById('editMeetingForm');
+        const addMeetingForm = document.getElementById('addMeetingForm');
+        const editAddressForm = document.getElementById('editAddressForm');
+        const fileUploadInput = document.getElementById('fileUploadInput');
+        const uploadedFileNamesDiv = document.getElementById('uploadedFileNames');
+        const searchInput = document.getElementById('searchInput');
+        const searchResultsDiv = document.getElementById('searchResults');
+
+        // Week View Elements
+        const toggleWeekViewBtn = document.getElementById('toggleWeekViewBtn');
+        const weekContainer = document.getElementById('weekContainer');
+
+        // --- Helper Functions ---
+
+        /**
+         * Formats a Date object into a readable string (e.g., "Monday, July 29, 2025").
+         * Adds "Today", "Tomorrow", "Yesterday" if applicable.
+         * @param {Date} date The date object to format.
+         * @returns {string} Formatted date string.
+         */
+        function formatDateForDisplay(date) {
+            const today = new Date();
+            const tomorrow = new Date();
+            tomorrow.setDate(today.getDate() + 1);
+            const yesterday = new Date();
+            yesterday.setDate(today.getDate() - 1);
+
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+
+            if (date.toDateString() === today.toDateString()) {
+                return 'Today, ' + date.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+            } else if (date.toDateString() === tomorrow.toDateString()) {
+                return 'Tomorrow, ' + date.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+            } else if (date.toDateString() === yesterday.toDateString()) {
+                return 'Yesterday, ' + date.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+            } else {
+                return date.toLocaleDateString('en-US', options);
+            }
+        }
+
+        /**
+         * Displays a custom message box instead of alert/confirm.
+         * @param {string} title The title of the message box.
+         * @param {string} message The message content.
+         * @param {boolean} [isConfirm=false] If true, shows OK and Cancel buttons. Otherwise, only OK.
+         * @returns {Promise<boolean>} Resolves to true if OK is clicked, false if Cancel is clicked (for confirm).
+         */
+        function showMessageBox(title, message, isConfirm = false) {
+            return new Promise((resolve) => {
+                document.getElementById('messageBoxTitle').textContent = title;
+                document.getElementById('messageBoxContent').textContent = message;
+                const confirmBtn = document.getElementById('messageBoxConfirmBtn');
+                const cancelBtn = document.getElementById('messageBoxCancelBtn');
+
+                confirmBtn.style.display = 'block';
+                cancelBtn.style.display = isConfirm ? 'block' : 'none';
+
+                const closeMessageBox = (result) => {
+                    messageBoxModal.classList.remove('active');
+                    confirmBtn.onclick = null;
+                    cancelBtn.onclick = null;
+                    resolve(result);
+                };
+
+                confirmBtn.onclick = () => closeMessageBox(true);
+                cancelBtn.onclick = () => closeMessageBox(false);
+
+                messageBoxModal.classList.add('active');
+            });
+        }
+
+        /**
+         * Parses CSV/TSV data into an array of objects.
+         * @param {string} text The raw CSV/TSV string.
+         * @param {string} delimiter The delimiter (e.g., ',' for CSV, '\t' for TSV).
+         * @returns {Array<Object>} An array of objects, where each object represents a row.
+         */
+        function parseCSV(text, delimiter) {
+            const lines = text.split(/\r\n|\n/);
+            if (lines.length === 0) return [];
+
+            const headers = lines[0].split(delimiter).map(h => h.trim());
+            const data = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                const currentLine = lines[i].trim();
+                if (!currentLine) continue; // Skip empty lines
+
+                // Handle quoted fields for CSV parsing
+                const values = [];
+                let inQuote = false;
+                let currentVal = '';
+                for (let j = 0; j < currentLine.length; j++) {
+                    const char = currentLine[j];
+                    if (char === '"') {
+                        inQuote = !inQuote;
+                    } else if (char === delimiter && !inQuote) {
+                        values.push(currentVal.trim());
+                        currentVal = '';
+                    } else {
+                        currentVal += char;
+                    }
+                }
+                values.push(currentVal.trim()); // Add the last value
+
+                if (values.length !== headers.length) {
+                    console.warn(`Skipping row ${i + 1} due to column mismatch. Expected ${headers.length}, got ${values.length}.`);
+                    continue;
+                }
+
+                const rowObject = {};
+                headers.forEach((header, index) => {
+                    rowObject[header] = values[index];
+                });
+                data.push(rowObject);
+            }
+            return data;
+        }
+
+        /**
+         * Parses an ICS file content into a structured object.
+         * This is a simplified parser and might not handle all ICS complexities.
+         * @param {string} icsContent The raw ICS file content.
+         * @returns {Array<Object>} An array of meeting objects.
+         */
+        function parseICS(icsContent) {
+            const meetings = [];
+            const lines = icsContent.split(/\r\n|\n/);
+            let currentEvent = null;
+
+            lines.forEach(line => {
+                line = line.trim();
+                if (line.startsWith('BEGIN:VEVENT')) {
+                    currentEvent = {};
+                } else if (line.startsWith('END:VEVENT')) {
+                    if (currentEvent) {
+                        // Map ICS fields to our meeting data structure
+                        const meeting = {
+                            "Project Name": currentEvent.SUMMARY || 'Untitled Meeting',
+                            "Bid Open Date": currentEvent.DTSTART ? new Date(currentEvent.DTSTART).toISOString().split('T')[0] : '', // YYYY-MM-DD
+                            "Bid Open Time": currentEvent.DTSTART ? new Date(currentEvent.DTSTART).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) : '', // HH:MM
+                            "Bid Open Street": '', // ICS LOCATION often needs parsing
+                            "Bid Open City": '',
+                            "Bid Open State": '',
+                            "Bid Open Zip": '',
+                            "Projec Description": currentEvent.DESCRIPTION || '',
+                            "Bid Project Info": '', // No direct ICS equivalent
+                            "Low Bid Contractor": '',
+                            "Low Bid Amount": '',
+                            "Low Bid Contractor 2": '',
+                            "Low Bid Amount 2": '',
+                            "Low Bid Contractor 3": '',
+                            "Low Bid Amount 3": '',
+                            "BID Source ID": Math.floor(Math.random() * 10000000) + 1000000 // Generate a dummy ID
+                        };
+
+                        // Attempt to parse location from ICS LOCATION field
+                        if (currentEvent.LOCATION) {
+                            const locationParts = currentEvent.LOCATION.split(',').map(p => p.trim());
+                            meeting["Bid Open Street"] = locationParts[0] || '';
+                            meeting["Bid Open City"] = locationParts[1] || '';
+                            meeting["Bid Open State"] = locationParts[2] || '';
+                            meeting["Bid Open Zip"] = locationParts[3] || '';
+                        }
+                        meetings.push(meeting);
+                    }
+                    currentEvent = null;
+                } else if (currentEvent) {
+                    const parts = line.split(':');
+                    if (parts.length >= 2) {
+                        const key = parts[0].split(';')[0]; // Handle properties like DTSTART;TZID=...
+                        const value = parts.slice(1).join(':');
+                        currentEvent[key] = value;
+                    }
+                }
+            });
+            return meetings;
+        }
+
+        /**
+         * Maps raw data object keys to standardized meeting data keys.
+         * @param {Object} rawData A single row object from the sheet/CSV.
+         * @returns {Object} A standardized meeting object.
+         */
+        function standardizeMeetingData(rawData) {
+            // Generate a unique ID if not present (for new entries)
+            const id = rawData["BID Source ID"] || `new-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+
+            // Parse date and time for consistent storage
+            let meetingDate = rawData["Bid Open Date"] || '';
+            let meetingTime = rawData["Bid Open Time"] || '';
+
+            // Handle various date formats if needed, for simplicity we assume YYYY-MM-DD for date input type
+            // If the date is like "8/11/2025", convert to YYYY-MM-DD
+            if (meetingDate && meetingDate.includes('/')) {
+                const parts = meetingDate.split('/');
+                if (parts.length === 3) {
+                    meetingDate = `${parts[2]}-${parts[0].padStart(2, '0')}-${parts[1].padStart(2, '0')}`;
+                }
+            }
+
+            // Combine date and time for a full JavaScript Date object
+            let fullDateTime = null;
+            if (meetingDate) {
+                try {
+                    // Use a dummy time if none provided to ensure valid date object
+                    const timePart = meetingTime || '00:00';
+                    fullDateTime = new Date(`${meetingDate}T${timePart}:00`);
+                    if (isNaN(fullDateTime.getTime())) { // Check for invalid date
+                        fullDateTime = null;
+                    }
+                } catch (e) {
+                    console.error("Error parsing date/time:", e);
+                    fullDateTime = null;
+                }
+            }
+
+
+            return {
+                id: id,
+                projectName: rawData["Project Name"] || '',
+                meetingDate: meetingDate, // YYYY-MM-DD format
+                meetingTime: meetingTime, // HH:MM format
+                fullDateTime: fullDateTime, // JavaScript Date object for sorting/filtering
+                meetingStreet: rawData["Bid Open Street"] || '',
+                meetingCity: rawData["Bid Open City"] || '',
+                meetingState: rawData["Bid Open State"] || '',
+                meetingZip: rawData["Bid Open Zip"] || '',
+                projectDescription: rawData["Projec Description"] || '',
+                bidProjectInfo: rawData["Bid Project Info"] || '',
+                lowBidContractor1: rawData["Low Bid Contractor"] || '',
+                lowBidAmount1: rawData["Low Bid Amount"] || '',
+                lowBidContractor2: rawData["Low Bid Contractor 2"] || '',
+                lowBidAmount2: rawData["Low Bid Amount 2"] || '',
+                lowBidContractor3: rawData["Low Bid Contractor 3"] || '',
+                lowBidAmount3: rawData["Low Bid Amount 3"] || '',
+                bidSourceId: rawData["BID Source ID"] || id // Use generated ID if original is missing
+            };
+        }
+
+        /**
+         * Converts standardized meeting data back to the Google Sheet column names.
+         * @param {Object} meeting The standardized meeting object.
+         * @returns {Object} An object with keys matching Google Sheet column headers.
+         */
+        function convertToSheetFormat(meeting) {
+            return {
+                "BID Source ID": meeting.bidSourceId,
+                "Project Name": meeting.projectName,
+                "Bid Open Date": meeting.meetingDate,
+                "Bid Open Time": meeting.meetingTime,
+                "Bid Open Street": meeting.meetingStreet,
+                "Bid Open City": meeting.meetingCity,
+                "Bid Open State": meeting.meetingState,
+                "Bid Open Zip": meeting.meetingZip,
+                "Projec Description": meeting.projectDescription,
+                "Bid Project Info": meeting.bidProjectInfo,
+                "Low Bid Contractor": meeting.lowBidContractor1,
+                "Low Bid Amount": meeting.lowBidAmount1,
+                "Low Bid Contractor 2": meeting.lowBidContractor2,
+                "Low Bid Amount 2": meeting.lowBidAmount2,
+                "Low Bid Contractor 3": meeting.lowBidContractor3,
+                "Low Bid Amount 3": meeting.lowBidAmount3,
+            };
+        }
+
+        // --- Core Functions ---
+
+        /**
+         * Fetches meeting data from the Google Apps Script.
+         */
+        async function fetchMeetings() {
+            try {
+                // Show a loading indicator
+                meetingsContainer.innerHTML = '<p style="text-align: center; margin-top: 2rem; font-size: 1.2rem; color: var(--medium-blue);">Loading meetings...</p>';
+                noMeetingsMessage.style.display = 'none';
+
+                const response = await fetch(APP_SCRIPT_URL + '?action=getMeetings');
+                console.log('Fetch response:', response); // Log the response
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const rawData = await response.json();
+
+                // Assuming rawData is an array of objects directly from the sheet
+                // If the Apps Script returns CSV, we'd need to parse it here.
+                // For now, assuming it returns JSON array of objects.
+                meetingsData = rawData.map(standardizeMeetingData);
+
+                // Sort meetings by date and time
+                meetingsData.sort((a, b) => {
+                    if (!a.fullDateTime || !b.fullDateTime) return 0; // Handle cases where date parsing failed
+                    return a.fullDateTime.getTime() - b.fullDateTime.getTime();
+                });
+
+                renderApp(); // Re-render the UI after fetching
+            } catch (error) {
+                console.error('Error fetching meetings:', error);
+                showMessageBox('Error', 'Failed to load meeting data. Please check your internet connection or try again later.');
+                meetingsContainer.innerHTML = '<p style="text-align: center; margin-top: 2rem; font-size: 1.2rem; color: red;">Failed to load meetings.</p>';
+            }
+        }
+
+        /**
+         * Renders the meetings for the current view date or the week view.
+         */
+        function renderApp() {
+            currentDateDisplay.textContent = formatDateForDisplay(currentViewDate);
+
+            if (isWeekView) {
+                meetingsContainer.style.display = 'none';
+                noMeetingsMessage.style.display = 'none';
+                weekContainer.style.display = 'grid';
+                renderWeekView();
+            } else {
+                meetingsContainer.style.display = 'block';
+                weekContainer.style.display = 'none';
+                renderDailyMeetings(currentViewDate);
+            }
+        }
+
+        /**
+         * Renders meetings for a specific day.
+         * @param {Date} date The date to display meetings for.
+         */
+        function renderDailyMeetings(date) {
+            meetingsContainer.innerHTML = ''; // Clear previous meetings
+            const meetingsForDay = meetingsData.filter(meeting => {
+                if (!meeting.fullDateTime) return false;
+                return meeting.fullDateTime.toDateString() === date.toDateString();
+            });
+
+            if (meetingsForDay.length === 0) {
+                noMeetingsMessage.style.display = 'block';
+            } else {
+                noMeetingsMessage.style.display = 'none';
+                meetingsForDay.forEach(meeting => {
+                    const meetingCard = document.createElement('div');
+                    meetingCard.classList.add('meeting-card');
+                    meetingCard.innerHTML = `
+                        <div class="meeting-card-header">
+                            <span class="time">${meeting.meetingTime || 'N/A'}</span>
+                            <span class="location">${meeting.meetingCity || 'N/A'}</span>
+                        </div>
+                        <h3 style="margin: 0; font-size: 1.3rem; color: var(--dark-blue);">${meeting.projectName || 'No Project Name'}</h3>
+                        <div class="meeting-buttons">
+                            <button class="map-btn" data-address="${meeting.meetingStreet}, ${meeting.meetingCity}, ${meeting.meetingState} ${meeting.meetingZip}" data-id="${meeting.id}">Google Maps</button>
+                            <button class="url-btn" data-url="https://app.constructconnect.com/project/${meeting.bidSourceId}/p?sourceType=3">View URL</button>
+                            <button class="info-btn" data-id="${meeting.id}">More Info</button>
+                        </div>
+                    `;
+                    meetingsContainer.appendChild(meetingCard);
+                });
+
+                // Attach event listeners to newly created buttons
+                attachMeetingCardEventListeners();
+            }
+        }
+
+        /**
+         * Renders the week view with meeting counts for each day.
+         */
+        function renderWeekView() {
+            weekContainer.innerHTML = '';
+            const today = new Date();
+            const startOfWeek = new Date(currentViewDate);
+            startOfWeek.setDate(currentViewDate.getDate() - currentViewDate.getDay()); // Go to Sunday of the current week
+
+            for (let i = 0; i < 7; i++) {
+                const day = new Date(startOfWeek);
+                day.setDate(startOfWeek.getDate() + i);
+
+                const meetingsForDay = meetingsData.filter(meeting => {
+                    if (!meeting.fullDateTime) return false;
+                    return meeting.fullDateTime.toDateString() === day.toDateString();
+                });
+                const meetingCount = meetingsForDay.length;
+
+                const dayCard = document.createElement('div');
+                dayCard.classList.add('week-day-card');
+                if (day.toDateString() === today.toDateString()) {
+                    dayCard.classList.add('active-day');
+                }
+                dayCard.dataset.date = day.toISOString().split('T')[0]; // Store date as YYYY-MM-DD
+                dayCard.innerHTML = `
+                    <div class="day-name">${day.toLocaleDateString('en-US', { weekday: 'short' })}</div>
+                    <div class="day-date">${day.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric' })}</div>
+                    <div class="meeting-count">${meetingCount}</div>
+                `;
+                dayCard.addEventListener('click', () => {
+                    currentViewDate = day;
+                    isWeekView = false;
+                    toggleWeekViewBtn.textContent = 'Show Week View';
+                    renderApp();
+                });
+                weekContainer.appendChild(dayCard);
+            }
+        }
+
+        /**
+         * Attaches event listeners to meeting card buttons (Google Maps, URL, More Info).
+         */
+        function attachMeetingCardEventListeners() {
+            // Google Maps Button
+            document.querySelectorAll('.map-btn').forEach(button => {
+                // Tap to open maps
+                button.addEventListener('click', function() {
+                    const address = this.dataset.address;
+                    if (address) {
+                        window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`, '_blank');
+                    } else {
+                        showMessageBox('No Address', 'Address information is not available for this meeting.');
+                    }
+                });
+
+                // Hold/Right-click to edit address
+                let pressTimer;
+                button.addEventListener('mousedown', function() {
+                    const btn = this;
+                    pressTimer = setTimeout(() => {
+                        openAddressEditModal(btn.dataset.id, btn.dataset.address);
+                    }, 700); // 700ms for long press
+                });
+                button.addEventListener('mouseup', function() {
+                    clearTimeout(pressTimer);
+                });
+                button.addEventListener('mouseleave', function() {
+                    clearTimeout(pressTimer);
+                });
+
+                // For touch devices
+                button.addEventListener('touchstart', function(e) {
+                    e.preventDefault(); // Prevent default touch behavior like scrolling
+                    const btn = this;
+                    pressTimer = setTimeout(() => {
+                        openAddressEditModal(btn.dataset.id, btn.dataset.address);
+                    }, 700);
+                }, { passive: false }); // Use passive: false to allow preventDefault
+                button.addEventListener('touchend', function() {
+                    clearTimeout(pressTimer);
+                });
+                button.addEventListener('touchcancel', function() {
+                    clearTimeout(pressTimer);
+                });
+            });
+
+            // URL Button
+            document.querySelectorAll('.url-btn').forEach(button => {
+                // Tap to open URL
+                button.addEventListener('click', function() {
+                    const url = this.dataset.url;
+                    if (url) {
+                        window.open(url, '_blank');
+                    } else {
+                        showMessageBox('No URL', 'URL information is not available for this meeting.');
+                    }
+                });
+
+                // Hold/Right-click to copy URL
+                let pressTimer;
+                button.addEventListener('mousedown', function() {
+                    const btn = this;
+                    pressTimer = setTimeout(() => {
+                        copyToClipboard(btn.dataset.url);
+                        showMessageBox('Copied!', 'Meeting URL copied to clipboard.');
+                    }, 700);
+                });
+                button.addEventListener('mouseup', function() {
+                    clearTimeout(pressTimer);
+                });
+                button.addEventListener('mouseleave', function() {
+                    clearTimeout(pressTimer);
+                });
+
+                // For touch devices
+                button.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                    const btn = this;
+                    pressTimer = setTimeout(() => {
+                        copyToClipboard(btn.dataset.url);
+                        showMessageBox('Copied!', 'Meeting URL copied to clipboard.');
+                    }, 700);
+                }, { passive: false });
+                button.addEventListener('touchend', function() {
+                    clearTimeout(pressTimer);
+                });
+                button.addEventListener('touchcancel', function() {
+                    clearTimeout(pressTimer);
+                });
+            });
+
+            // More Info Button
+            document.querySelectorAll('.info-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const meetingId = this.dataset.id;
+                    openMoreInfoModal(meetingId);
+                });
+            });
+        }
+
+        /**
+         * Copies text to the clipboard.
+         * @param {string} text The text to copy.
+         */
+        function copyToClipboard(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+                showMessageBox('Error', 'Failed to copy URL to clipboard. Please try manually.');
+            }
+            document.body.removeChild(textarea);
+        }
+
+        /**
+         * Opens the More Info/Edit Meeting modal and populates it with data.
+         * @param {string} meetingId The ID of the meeting to display/edit.
+         */
+        function openMoreInfoModal(meetingId) {
+            const meeting = meetingsData.find(m => m.id === meetingId);
+            if (!meeting) {
+                showMessageBox('Error', 'Meeting not found.');
+                return;
+            }
+
+            // Populate the form fields
+            document.getElementById('editMeetingId').value = meeting.id;
+            document.getElementById('editProjectName').value = meeting.projectName;
+            document.getElementById('editMeetingDate').value = meeting.meetingDate;
+            document.getElementById('editMeetingTime').value = meeting.meetingTime;
+            document.getElementById('editMeetingStreet').value = meeting.meetingStreet;
+            document.getElementById('editMeetingCity').value = meeting.meetingCity;
+            document.getElementById('editMeetingState').value = meeting.meetingState;
+            document.getElementById('editMeetingZip').value = meeting.meetingZip;
+            document.getElementById('editProjectDescription').value = meeting.projectDescription;
+            document.getElementById('editBidProjectInfo').value = meeting.bidProjectInfo;
+            document.getElementById('editLowBidContractor1').value = meeting.lowBidContractor1;
+            document.getElementById('editLowBidAmount1').value = meeting.lowBidAmount1;
+            document.getElementById('editLowBidContractor2').value = meeting.lowBidContractor2;
+            document.getElementById('editLowBidAmount2').value = meeting.lowBidAmount2;
+            document.getElementById('editLowBidContractor3').value = meeting.lowBidContractor3;
+            document.getElementById('editLowBidAmount3').value = meeting.lowBidAmount3;
+
+            moreInfoModal.classList.add('active');
+        }
+
+        /**
+         * Opens the Address Edit modal.
+         * @param {string} meetingId The ID of the meeting whose address is being edited.
+         * @param {string} currentAddress The current full address string.
+         */
+        function openAddressEditModal(meetingId, currentAddress) {
+            document.getElementById('editAddressMeetingId').value = meetingId;
+            document.getElementById('editAddressInput').value = currentAddress;
+            addressEditModal.classList.add('active');
+        }
+
+        /**
+         * Sends data to Google Apps Script to update a meeting.
+         * @param {Object} meetingData The meeting object to update.
+         */
+        async function updateMeetingInSheet(meetingData) {
+            try {
+                const response = await fetch(APP_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'updateMeeting',
+                        data: convertToSheetFormat(meetingData) // Send in sheet column format
+                    })
+                });
+                const result = await response.json(); // Now we can parse the response
+                if (result.status === 'success') {
+                    showMessageBox('Success', 'Meeting updated successfully!');
+                } else {
+                    showMessageBox('Error', `Failed to update meeting: ${result.message}`);
+                }
+                // Re-fetch data to ensure UI is in sync
+                await fetchMeetings();
+            } catch (error) {
+                console.error('Error updating meeting:', error);
+                showMessageBox('Error', 'Failed to update meeting. Please try again.');
+            }
+        }
+
+        /**
+         * Sends data to Google Apps Script to add a new meeting.
+         * @param {Object} meetingData The meeting object to add.
+         */
+        async function addMeetingToSheet(meetingData) {
+            try {
+                const response = await fetch(APP_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'addMeeting',
+                        data: convertToSheetFormat(meetingData) // Send in sheet column format
+                    })
+                });
+                const result = await response.json(); // Now we can parse the response
+                if (result.status === 'success') {
+                    showMessageBox('Success', 'Meeting added successfully!');
+                } else {
+                    showMessageBox('Error', `Failed to add meeting: ${result.message}`);
+                }
+                await fetchMeetings(); // Re-fetch data to ensure UI is in sync
+            } catch (error) {
+                console.error('Error adding meeting:', error);
+                showMessageBox('Error', 'Failed to add meeting. Please try again.');
+            }
+        }
+
+        // --- Event Listeners ---
+
+        prevDayBtn.addEventListener('click', () => {
+            currentViewDate.setDate(currentViewDate.getDate() - 1);
+            renderApp();
+        });
+
+        nextDayBtn.addEventListener('click', () => {
+            currentViewDate.setDate(currentViewDate.getDate() + 1);
+            renderApp();
+        });
+
+        addMeetingFab.addEventListener('click', () => {
+            // Clear the add form before opening
+            addMeetingForm.reset();
+            uploadedFileNamesDiv.textContent = '';
+            addMeetingModal.classList.add('active');
+        });
+
+        searchFab.addEventListener('click', () => {
+            searchInput.value = ''; // Clear search input
+            searchResultsDiv.innerHTML = ''; // Clear previous results
+            searchModal.classList.add('active');
+        });
+
+        toggleWeekViewBtn.addEventListener('click', () => {
+            isWeekView = !isWeekView;
+            toggleWeekViewBtn.textContent = isWeekView ? 'Show Day View' : 'Show Week View';
+            renderApp();
+        });
+
+
+        // --- Form Submissions ---
+
+        editMeetingForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const meetingId = document.getElementById('editMeetingId').value;
+            const meetingIndex = meetingsData.findIndex(m => m.id === meetingId);
+
+            if (meetingIndex === -1) {
+                showMessageBox('Error', 'Meeting not found for update.');
+                return;
+            }
+
+            const updatedMeeting = { ...meetingsData[meetingIndex] };
+            updatedMeeting.projectName = document.getElementById('editProjectName').value;
+            updatedMeeting.meetingDate = document.getElementById('editMeetingDate').value;
+            updatedMeeting.meetingTime = document.getElementById('editMeetingTime').value;
+            updatedMeeting.meetingStreet = document.getElementById('editMeetingStreet').value;
+            updatedMeeting.meetingCity = document.getElementById('editMeetingCity').value;
+            updatedMeeting.meetingState = document.getElementById('editMeetingState').value;
+            updatedMeeting.meetingZip = document.getElementById('editMeetingZip').value;
+            updatedMeeting.projectDescription = document.getElementById('editProjectDescription').value;
+            updatedMeeting.bidProjectInfo = document.getElementById('editBidProjectInfo').value;
+            updatedMeeting.lowBidContractor1 = document.getElementById('editLowBidContractor1').value;
+            updatedMeeting.lowBidAmount1 = document.getElementById('editLowBidAmount1').value;
+            updatedMeeting.lowBidContractor2 = document.getElementById('editLowBidContractor2').value;
+            updatedMeeting.lowBidAmount2 = document.getElementById('editLowBidAmount2').value;
+            updatedMeeting.lowBidContractor3 = document.getElementById('editLowBidContractor3').value;
+            updatedMeeting.lowBidAmount3 = document.getElementById('editLowBidAmount3').value;
+
+            // Re-parse fullDateTime after date/time update
+            try {
+                const timePart = updatedMeeting.meetingTime || '00:00';
+                updatedMeeting.fullDateTime = new Date(`${updatedMeeting.meetingDate}T${timePart}:00`);
+            } catch (e) {
+                console.error("Error parsing updated date/time:", e);
+                updatedMeeting.fullDateTime = null;
+            }
+
+            // Update the local data array
+            meetingsData[meetingIndex] = updatedMeeting;
+
+            await updateMeetingInSheet(updatedMeeting);
+            moreInfoModal.classList.remove('active');
+            renderApp(); // Re-render to reflect changes
+        });
+
+        addMeetingForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newMeeting = {
+                "Project Name": document.getElementById('addProjectName').value,
+                "Bid Open Date": document.getElementById('addMeetingDate').value,
+                "Bid Open Time": document.getElementById('addMeetingTime').value,
+                "Bid Open Street": document.getElementById('addMeetingStreet').value,
+                "Bid Open City": document.getElementById('addMeetingCity').value,
+                "Bid Open State": document.getElementById('addMeetingState').value,
+                "Bid Open Zip": document.getElementById('addMeetingZip').value,
+                "Projec Description": document.getElementById('addProjectDescription').value,
+                "Bid Project Info": document.getElementById('addBidProjectInfo').value,
+                "Low Bid Contractor": document.getElementById('addLowBidContractor1').value,
+                "Low Bid Amount": document.getElementById('addLowBidAmount1').value,
+                // Add other fields if needed, or leave blank
+                "Low Bid Contractor 2": '', "Low Bid Amount 2": '',
+                "Low Bid Contractor 3": '', "Low Bid Amount 3": '',
+                "BID Source ID": `new-${Date.now()}-${Math.random().toString(36).substring(2, 9)}` // Generate a temporary ID
+            };
+
+            const standardizedNewMeeting = standardizeMeetingData(newMeeting);
+            meetingsData.push(standardizedNewMeeting); // Add to local data immediately
+            await addMeetingToSheet(standardizedNewMeeting);
+            addMeetingModal.classList.remove('active');
+            renderApp(); // Re-render to show new meeting
+        });
+
+        editAddressForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const meetingId = document.getElementById('editAddressMeetingId').value;
+            const newAddress = document.getElementById('editAddressInput').value;
+
+            const meetingIndex = meetingsData.findIndex(m => m.id === meetingId);
+            if (meetingIndex === -1) {
+                showMessageBox('Error', 'Meeting not found for address update.');
+                return;
+            }
+
+            // Simple parsing of full address into street, city, state, zip
+            // This is a basic implementation and might need refinement for robustness
+            const parts = newAddress.split(',').map(p => p.trim());
+            const updatedMeeting = { ...meetingsData[meetingIndex] };
+            updatedMeeting.meetingStreet = parts[0] || '';
+            updatedMeeting.meetingCity = parts[1] || '';
+            updatedMeeting.meetingState = parts[2] || '';
+            updatedMeeting.meetingZip = parts[3] || ''; // Assuming zip is the last part if present
+
+            meetingsData[meetingIndex] = updatedMeeting; // Update local data
+
+            await updateMeetingInSheet(updatedMeeting);
+            addressEditModal.classList.remove('active');
+            renderApp(); // Re-render to reflect address changes
+        });
+
+        fileUploadInput.addEventListener('change', (event) => {
+            const files = event.target.files;
+            uploadedFileNamesDiv.innerHTML = ''; // Clear previous names
+            if (files.length > 0) {
+                Array.from(files).forEach(file => {
+                    const fileNameSpan = document.createElement('span');
+                    fileNameSpan.textContent = file.name;
+                    fileNameSpan.style.display = 'block';
+                    uploadedFileNamesDiv.appendChild(fileNameSpan);
+
+                    const reader = new FileReader();
+                    reader.onload = async (e) => {
+                        const content = e.target.result;
+                        let parsedMeetings = [];
+
+                        if (file.name.endsWith('.ics')) {
+                            parsedMeetings = parseICS(content);
+                        } else if (file.name.endsWith('.csv')) {
+                            parsedMeetings = parseCSV(content, ',');
+                        } else if (file.name.endsWith('.tsv')) {
+                            parsedMeetings = parseCSV(content, '\t');
+                        } else {
+                            showMessageBox('Unsupported File Type', 'Please upload .ics, .csv, or .tsv files.');
+                            return;
+                        }
+
+                        if (parsedMeetings.length > 0) {
+                            for (const rawMeeting of parsedMeetings) {
+                                const standardizedMeeting = standardizeMeetingData(rawMeeting);
+                                meetingsData.push(standardizedMeeting); // Add to local data
+                                await addMeetingToSheet(standardizedMeeting); // Add to sheet
+                            }
+                            showMessageBox('Upload Complete', `Successfully added ${parsedMeetings.length} meetings from ${file.name}.`);
+                            renderApp(); // Re-render after all uploads
+                        } else {
+                            showMessageBox('No Data Found', `No valid meeting data found in ${file.name}.`);
+                        }
+                    };
+                    reader.readAsText(file);
+                });
+            }
+        });
+
+        searchInput.addEventListener('input', () => {
+            const searchTerm = searchInput.value.toLowerCase();
+            searchResultsDiv.innerHTML = ''; // Clear previous results
+
+            if (searchTerm.length < 2) { // Only search if at least 2 characters are typed
+                return;
+            }
+
+            const filteredMeetings = meetingsData.filter(meeting => {
+                return (meeting.projectName && meeting.projectName.toLowerCase().includes(searchTerm)) ||
+                       (meeting.meetingStreet && meeting.meetingStreet.toLowerCase().includes(searchTerm)) ||
+                       (meeting.meetingCity && meeting.meetingCity.toLowerCase().includes(searchTerm)) ||
+                       (meeting.projectDescription && meeting.projectDescription.toLowerCase().includes(searchTerm)) ||
+                       (meeting.bidProjectInfo && meeting.bidProjectInfo.toLowerCase().includes(searchTerm));
+            });
+
+            if (filteredMeetings.length === 0) {
+                searchResultsDiv.innerHTML = '<p style="text-align: center; margin-top: 1rem; color: #888;">No matching meetings found.</p>';
+            } else {
+                filteredMeetings.forEach(meeting => {
+                    const meetingCard = document.createElement('div');
+                    meetingCard.classList.add('meeting-card');
+                    meetingCard.innerHTML = `
+                        <div class="meeting-card-header">
+                            <span class="time">${meeting.meetingTime || 'N/A'}</span>
+                            <span class="location">${meeting.meetingCity || 'N/A'}</span>
+                        </div>
+                        <h3 style="margin: 0; font-size: 1.1rem; color: var(--dark-blue);">${meeting.projectName || 'No Project Name'}</h3>
+                        <p style="font-size: 0.9rem; color: #555; margin-top: 0.5rem;">${meeting.meetingDate}</p>
+                        <div class="meeting-buttons" style="flex-direction: row; justify-content: flex-start; gap: 0.5rem;">
+                            <button class="map-btn" data-address="${meeting.meetingStreet}, ${meeting.meetingCity}, ${meeting.meetingState} ${meeting.meetingZip}" data-id="${meeting.id}" style="padding: 0.5rem 0.8rem; font-size: 0.8rem; min-height: auto;">Maps</button>
+                            <button class="url-btn" data-url="https://app.constructconnect.com/project/${meeting.bidSourceId}/p?sourceType=3" style="padding: 0.5rem 0.8rem; font-size: 0.8rem; min-height: auto;">URL</button>
+                            <button class="info-btn" data-id="${meeting.id}" style="padding: 0.5rem 0.8rem; font-size: 0.8rem; min-height: auto;">Info</button>
+                        </div>
+                    `;
+                    searchResultsDiv.appendChild(meetingCard);
+                });
+                attachMeetingCardEventListeners(); // Re-attach listeners for search results
+            }
+        });
+
+
+        // --- Initial Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchMeetings();
+        });
+
+        // --- Google Apps Script (Server-side) Code Suggestion ---
+        // This is the code that would be deployed to Google Apps Script.
+        // It's provided here for completeness, but should be deployed separately by the user.
+        /*
+        function doGet(e) {
+            const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+            const dataRange = sheet.getDataRange();
+            const values = dataRange.getValues();
+
+            if (values.length === 0) {
+                return ContentService.createTextOutput(JSON.stringify([]))
+                    .setMimeType(ContentService.MimeType.JSON)
+                    .setHeaders({'Access-Control-Allow-Origin': '*'}); // IMPORTANT: Add this for CORS
+            }
+
+            const headers = values[0];
+            const result = [];
+
+            for (let i = 1; i < values.length; i++) {
+                const row = values[i];
+                const rowObject = {};
+                headers.forEach((header, index) => {
+                    rowObject[header] = row[index];
+                });
+                result.push(rowObject);
+            }
+
+            return ContentService.createTextOutput(JSON.stringify(result))
+                .setMimeType(ContentService.MimeType.JSON)
+                .setHeaders({'Access-Control-Allow-Origin': '*'}); // IMPORTANT: Add this for CORS
+        }
+
+        function doPost(e) {
+            const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+            const payload = JSON.parse(e.postData.contents);
+            const action = payload.action;
+            const data = payload.data; // This 'data' is the object with sheet column names
+
+            let response;
+
+            if (action === 'addMeeting') {
+                const headers = sheet.getDataRange().getValues()[0];
+                const newRow = [];
+                headers.forEach(header => {
+                    newRow.push(data[header] !== undefined ? data[header] : '');
+                });
+                sheet.appendRow(newRow);
+                response = { status: 'success', message: 'Meeting added' };
+            } else if (action === 'updateMeeting') {
+                const headers = sheet.getDataRange().getValues()[0];
+                const bidSourceIdIndex = headers.indexOf("BID Source ID");
+                if (bidSourceIdIndex === -1) {
+                    response = { status: 'error', message: 'BID Source ID column not found' };
+                } else {
+                    const allData = sheet.getDataRange().getValues();
+                    let rowIndexToUpdate = -1;
+
+                    for (let i = 1; i < allData.length; i++) { // Start from 1 to skip headers
+                        if (String(allData[i][bidSourceIdIndex]) === String(data["BID Source ID"])) {
+                            rowIndexToUpdate = i + 1; // +1 because sheet rows are 1-indexed
+                            break;
+                        }
+                    }
+
+                    if (rowIndexToUpdate !== -1) {
+                        const updatedRow = [];
+                        headers.forEach(header => {
+                            updatedRow.push(data[header] !== undefined ? data[header] : allData[rowIndexToUpdate - 1][headers.indexOf(header)]);
+                        });
+                        sheet.getRange(rowIndexToUpdate, 1, 1, updatedRow.length).setValues([updatedRow]);
+                        response = { status: 'success', message: 'Meeting updated' };
+                    } else {
+                        response = { status: 'error', message: 'Meeting not found for update' };
+                    }
+                }
+            } else {
+                response = { status: 'error', message: 'Invalid action' };
+            }
+
+            return ContentService.createTextOutput(JSON.stringify(response))
+                .setMimeType(ContentService.MimeType.JSON)
+                .setHeaders({'Access-Control-Allow-Origin': '*'}); // IMPORTANT: Add this for CORS
+        }
+        */
+    </script>
+</body>
+</html>
+
+
