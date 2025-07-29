@@ -902,15 +902,18 @@
                               .replace('1899-12-30T', '')
                               .slice(0, 5);                       // keep only "HH:mm"
 
-            // reuse the existing variable
+            // Parse date and time for consistent storage
+            let meetingDate = rawData["Bid Open Date"] || '';
+            let meetingTime = (rawData["Bid Open Time"] || '')
+                              .replace('1899-12-30T', '')
+                              .slice(0, 5);
+
             if (meetingDate) {
                 const [m, d, y] = meetingDate.split('/');
                 if (m && d && y) {
                     const iso = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}T${meetingTime || '00:00'}:00`;
-                    fullDateTime = new Date(iso);
-
-                    // also re-write meetingDate in YYYY-MM-DD for the form inputs
-                    meetingDate = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+                    fullDateTime = new Date(iso);   // assign to existing variable
+                    meetingDate  = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
                 } else {
                     fullDateTime = null;
                 }
