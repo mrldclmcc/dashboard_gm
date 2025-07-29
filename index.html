@@ -902,7 +902,7 @@
                               .replace('1899-12-30T', '')
                               .slice(0, 5);                       // keep only "HH:mm"
 
-            let fullDateTime = null;
+            // reuse the existing variable
             if (meetingDate) {
                 const [m, d, y] = meetingDate.split('/');
                 if (m && d && y) {
@@ -911,7 +911,11 @@
 
                     // also re-write meetingDate in YYYY-MM-DD for the form inputs
                     meetingDate = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+                } else {
+                    fullDateTime = null;
                 }
+            } else {
+                fullDateTime = null;
             }
 
             // Combine date and time for a full JavaScript Date object
